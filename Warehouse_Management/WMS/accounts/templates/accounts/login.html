@@ -69,8 +69,11 @@
             font-size: 14px;
         }
         .right-side a {
-            color: #4e54c8  ;
+            color: #4e54c8;
             text-decoration: none;
+        }
+        .right-side a:hover {
+            text-decoration: underline;
         }
         .button-81 {
             background-color: #fff;
@@ -118,13 +121,14 @@
             <form method="post">
                 {% csrf_token %}
                 <label for="email">Email:</label><br>
-                <input type="email" id="email" name="email" required><br><br>
+                <input type="email" id="username" name="username" required><br><br>
                 <label for="password">Password:</label><br>
                 <input type="password" id="password" name="password" required><br><br>
            
                 <button type="submit" class="button-81" role="button">Login</button>
             </form>
             <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+            <p><a href="{% url 'password_reset' %}">Forgot your password?</a></p>
         </div>
     </div>
 </body>

@@ -128,6 +128,52 @@
         .selected-item:hover {
             background-color: #2980b9;
         }
+                #imageUpload {
+            margin-bottom: 20px;
+        }
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .preview {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border: 2px solid #ccc;
+            background-color: #fff;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #previewImage {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+
+        .clear-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 2px 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .clear-button:hover {
+            background: darkred;
+        }
+    </style>
     </style>
 </head>
 <body>
@@ -180,10 +226,11 @@
             <input type="number" id="id_Warehouse_amount" name="Warehouse_amount">
         </div>
 
-        <div class="form-group">
-            <label for="id_images">Warehouse Images:</label>
-            <input type="file" id="id_images" name="images" multiple>
-        </div>
+	<div class="form-group">
+        <label for="id_images">Warehouse Images:</label>
+        <input type="file" id="imageUpload" accept="image/*" multiple>
+        <div id="previewContainer" class="preview-container"></div>
+    </div>
 
         <div class="form-group">
             <label for="id_Additional_amount">Additional Amount:</label>
@@ -278,9 +325,7 @@
     });
 
     // Function to update the rectangle box for a specific dropdown
-    function updateRectangleBox(dropdownIndex) {
-        const dropdowns = document.querySelectorAll('.dropdown');
-        const dropdown = dropdowns[dropdownIndex];
+    function updateRectangleBox(dropdown) {
         const checkboxes = dropdown.querySelectorAll('.dropdown-content input[type="checkbox"]');
         const rectangleBox = dropdown.querySelector('.rectangle-box');
 
@@ -296,7 +341,7 @@
                 ? selectedItems.map(item => `
                     <div class="selected-item" data-value="${item.value}">
                         ${item.text}
-                        <span class="remove" onclick="removeItem('${item.value}', ${dropdownIndex})">&times;</span>
+                        <span class="remove" onclick="removeItem('${item.value}', this)">&times;</span>
                     </div>
                 `).join('')
                 : 'No items selected.'
@@ -305,20 +350,22 @@
     }
 
     // Add event listeners to checkboxes in all dropdowns
-    document.querySelectorAll('.dropdown-content input[type="checkbox"]').forEach((checkbox, index) => {
-        checkbox.addEventListener('change', () => {
-            updateRectangleBox(Array.from(document.querySelectorAll('.dropdown')).indexOf(checkbox.closest('.dropdown')));
+    document.querySelectorAll('.dropdown-content input[type="checkbox"]').forEach((checkbox) => {
+        checkbox.addEventListener('change', (event) => {
+            const dropdown = event.target.closest('.dropdown');
+            updateRectangleBox(dropdown);
         });
     });
 
     // Function to remove a selected item
-    function removeItem(value, dropdownIndex) {
-        document.querySelector(`.dropdown:nth-of-type(${dropdownIndex + 1}) .dropdown-content input[value="${value}"]`).checked = false;
-        updateRectangleBox(dropdownIndex);
+    function removeItem(value, removeButton) {
+        const dropdown = removeButton.closest('.dropdown');
+        dropdown.querySelector(`.dropdown-content input[value="${value}"]`).checked = false;
+        updateRectangleBox(dropdown);
     }
 
     // Toggle the dropdown menu visibility
-    document.querySelectorAll('.dropdown-selected').forEach((dropdownSelected, index) => {
+    document.querySelectorAll('.dropdown-selected').forEach((dropdownSelected) => {
         dropdownSelected.addEventListener('click', function() {
             const dropdown = dropdownSelected.closest('.dropdown');
             dropdown.classList.toggle('show');
@@ -327,13 +374,53 @@
 
     // Close the dropdown if clicked outside
     window.addEventListener('click', function(event) {
-            if (!event.target.matches('.dropdown-selected')) {
-                document.querySelectorAll('.dropdown.show').forEach(dropdown => {
-                    dropdown.classList.remove('show');
-                });
+        if (!event.target.matches('.dropdown-selected')) {
+            document.querySelectorAll('.dropdown.show').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
+        }
+    });
+</script>
+<script>
+        document.getElementById('imageUpload').addEventListener('change', function(event) {
+            const files = event.target.files;
+            const previewContainer = document.getElementById('previewContainer');
+
+            // Clear previous previews
+            previewContainer.innerHTML = '';
+
+            // Limit the number of files to 5
+            const fileCount = Math.min(files.length, 5);
+
+            for (let i = 0; i < fileCount; i++) {
+                const file = files[i];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = e.target.result;
+                        imgElement.id = 'previewImage';
+                        imgElement.alt = 'Image Preview';
+
+                        const clearButton = document.createElement('button');
+                        clearButton.textContent = 'X';
+                        clearButton.className = 'clear-button';
+
+                        const previewBox = document.createElement('div');
+                        previewBox.className = 'preview';
+                        previewBox.appendChild(imgElement);
+                        previewBox.appendChild(clearButton);
+
+                        previewContainer.appendChild(previewBox);
+
+                        clearButton.addEventListener('click', function() {
+                            previewBox.remove();
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
             }
         });
-</script>
-
+    </script>
 </body>
 </html>

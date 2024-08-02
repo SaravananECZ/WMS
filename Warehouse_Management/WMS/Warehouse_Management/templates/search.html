@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+      integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <title>Warehouse Management</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+      }
+
+      .search-input {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem; /* 6px */
+        padding: 0.75rem 1rem; /* 12px 16px */
+        width: 100%;
+        max-width: 600px; /* Adjust the max-width as needed */
+        margin: 0 auto; /* Center the search bar */
+        display: block; /* Ensure it takes up the full width available */
+        font-size: 1rem; /* Font size for better visibility */
+        /* margin-top: 80px; Offset the search bar below the fixed nav bar */
+      }
+      .search-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        border-color: #3b82f6;
+      }
+      .filter-container {
+        position: fixed;
+        top: 80px;
+        left: 0;
+        width: 22%;
+        height: calc(100vh - 80px);
+        overflow-y: auto;
+        border-right: 1px solid #e5e7eb;
+        padding: 1.5rem;
+        background-color: #f9fafb;
+        box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        z-index: 999; /* Ensure the filter container is below the nav bar but above other content */
+      }
+      .filter-container.hidden {
+        transform: translateX(-100%);
+      }
+      .content {
+        margin-left: 25%;
+        padding: 1.5rem;
+        margin-top: 80px; /* Offset content below the fixed nav bar */
+        height: calc(100vh - 80px);
+        overflow-y: auto;
+      }
+      .card {
+        max-width: 300px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        background-color: white;
+        margin-bottom: 1rem;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+      }
+      .card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+      }
+      .card-content {
+        padding: 1rem;
+      }
+      .card-content h2 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #111827;
+      }
+      .card-content p {
+        margin-bottom: 0.5rem;
+        color: #6b7280;
+      }
+      .card-content .price {
+        font-weight: bold;
+        color: #1f2937;
+      }
+
+      .btn {
+        padding: 5px 6px;
+        border-radius: 100px;
+        font-weight: 500;
+        text-align: center;
+        transition: background-color 0.3s ease;
+      }
+      .btn-primary {
+        background-color: #3b82f6;
+        color: white;
+      }
+      .btn-primary:hover {
+        background-color: #2563eb;
+      }
+      .btn-secondary {
+        background-color: #6b7280;
+        color: white;
+      }
+      .btn-secondary:hover {
+        background-color: #4b5563;
+      }
+      .filter-buttons {
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-900">
+    <nav
+      class="bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600"
+    >
+      <div
+        class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4"
+      >
+        <a
+          href="https://flowbite.com/"
+          class="flex items-center space-x-3 rtl:space-x-reverse"
+        >
+          <span
+            class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"
+            >Flowbite</span
+          >
+        </a>
+
+        <div
+          class="ml-10 items-center justify-between hidden w-full md:flex md:w-auto md:order-1"
+          id="navbar-sticky"
+        >
+          <ul
+            class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-16 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700"
+          >
+            <li>
+              <a
+                href="#"
+                class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500"
+                aria-current="page"
+                >Warehouse</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
+                >Transport</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
+                >Other Services</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div class="flex justify-evenly md:order-2 space-x-3 md:space-x-0">
+          <div
+            href=""
+            class="pt-2 px-6 bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:dark:text-blue-500"
+          >
+            Become a Host
+          </div>
+
+          <div>
+            <button
+              type="button"
+              class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700"
+            >
+              Sign in
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Filter Section -->
+    <div class="filter-container" id="filter-container">
+      <h3 class="text-xl font-semibold mb-4">Filters</h3>
+      <div class="mb-4">
+        <h4 class="text-lg font-medium mb-2">Warehouse Size</h4>
+        <div>
+          <input
+            type="checkbox"
+            id="small"
+            name="size"
+            value="Small"
+            class="mr-2"
+          />
+          <label for="small">Small</label>
+        </div>
+        <div>
+          <input
+            type="checkbox"
+            id="medium"
+            name="size"
+            value="Medium"
+            class="mr-2"
+          />
+          <label for="medium">Medium</label>
+        </div>
+        <div>
+          <input
+            type="checkbox"
+            id="large"
+            name="size"
+            value="Large"
+            class="mr-2"
+          />
+          <label for="large">Large</label>
+        </div>
+      </div>
+      <div class="mb-4">
+        <h4 class="text-lg font-medium mb-2">Location</h4>
+        <div>
+          <input
+            type="checkbox"
+            id="central"
+            name="location"
+            value="Central Chennai"
+            class="mr-2"
+          />
+          <label for="central">Central Chennai</label>
+        </div>
+        <div>
+          <input
+            type="checkbox"
+            id="south"
+            name="location"
+            value="South Chennai"
+            class="mr-2"
+          />
+          <label for="south">South Chennai</label>
+        </div>
+        <div>
+          <input
+            type="checkbox"
+            id="north"
+            name="location"
+            value="North Chennai"
+            class="mr-2"
+          />
+          <label for="north">North Chennai</label>
+        </div>
+        <div>
+          <input
+            type="checkbox"
+            id="west"
+            name="location"
+            value="West Chennai"
+            class="mr-2"
+          />
+          <label for="west">West Chennai</label>
+        </div>
+      </div>
+      <div class="mb-4">
+        <h4 class="text-lg font-medium mb-2">Price Range</h4>
+        <div>
+          <input
+            type="checkbox"
+            id="under-100000"
+            name="price"
+            value="under-100000"
+            class="mr-2"
+          />
+          <label for="under-100000">Under ₹100,000</label>
+        </div>
+        <div>
+          <input
+            type="checkbox"
+            id="100000-500000"
+            name="price"
+            value="100000-500000"
+            class="mr-2"
+          />
+          <label for="100000-500000">₹100,000 - ₹500,000</label>
+        </div>
+        <div>
+          <input
+            type="checkbox"
+            id="over-500000"
+            name="price"
+            value="over-500000"
+            class="mr-2"
+          />
+          <label for="over-500000">Over ₹500,000</label>
+        </div>
+      </div>
+      <div class="mb-4">
+        <h4 class="text-lg font-medium mb-2">Square Footage</h4>
+        <div>
+          <input
+            type="checkbox"
+            id="under-2000"
+            name="sqft"
+            value="under-2000"
+            class="mr-2"
+          />
+          <label for="under-2000">Under 2000 sqft</label>
+        </div>
+        <div>
+          <input
+            type="checkbox"
+            id="2000-4000"
+            name="sqft"
+            value="2000-4000"
+            class="mr-2"
+          />
+          <label for="2000-4000">2000 - 4000 sqft</label>
+        </div>
+        <div>
+          <input
+            type="checkbox"
+            id="over-4000"
+            name="sqft"
+            value="over-4000"
+            class="mr-2"
+          />
+          <label for="over-4000">Over 4000 sqft</label>
+        </div>
+      </div>
+      <div class="filter-buttons">
+        <button onclick="clearFilters()" class="btn btn-secondary mr-4">
+          Clear Filters
+        </button>
+        <button onclick="applyFilters()" class="btn btn-primary">
+          Apply Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+      <div class="mb-6">
+        <input
+          type="text"
+          id="search-input"
+          class="search-input border rounded-lg p-3 w-full"
+          placeholder="Type to search..."
+        />
+      </div>
+      <div
+        id="warehouse-cards"
+        class="flex justify-evenly flex-wrap gap-6 mt-6"
+      >
+        <!-- Cards will be dynamically added here -->
+      </div>
+    </div>
+
+    <script>
+      const conversionRate = 83; // USD to INR conversion rate
+
+      const warehouses = [
+        {
+          name: "Warehouse A",
+          size: "Large",
+          location: "Central Chennai",
+          price: 4500 * conversionRate,
+          sqft: 5000,
+          image: "./src/images/istockphoto-1405246054-612x612.jpg",
+          href: "/page1.html",
+        },
+        {
+          name: "Warehouse B",
+          size: "Medium",
+          location: "South Chennai",
+          price: 2500 * conversionRate,
+          sqft: 3000,
+          image: "./src/images/istockphoto-1405246054-612x612.jpg",
+          href: "/page1.html",
+        },
+        {
+          name: "Warehouse C",
+          size: "Small",
+          location: "North Chennai",
+          price: 1200 * conversionRate,
+          sqft: 1500,
+          image: "./src/images/istockphoto-1405246054-612x612.jpg",
+          href: "/page1.html",
+        },
+        {
+          name: "Warehouse D",
+          size: "Medium",
+          location: "Central Chennai",
+          price: 2800 * conversionRate,
+          sqft: 3500,
+          image: "./src/images/istockphoto-1405246054-612x612.jpg",
+          href: "/page1.html",
+        },
+        {
+          name: "Warehouse E",
+          size: "Large",
+          location: "South Chennai",
+          price: 5200 * conversionRate,
+          sqft: 5500,
+          image: "./src/images/istockphoto-1405246054-612x612.jpg",
+          href: "/page1.html",
+        },
+        {
+          name: "Warehouse F",
+          size: "Small",
+          location: "North Chennai",
+          price: 1100 * conversionRate,
+          sqft: 1400,
+          image: "./src/images/istockphoto-1405246054-612x612.jpg",
+          href: "/page1.html",
+        },
+        {
+          name: "Warehouse G",
+          size: "Large",
+          location: "Central Chennai",
+          price: 4700 * conversionRate,
+          sqft: 5200,
+          image: "./src/images/istockphoto-1405246054-612x612.jpg",
+          href: "/page1.html",
+        },
+        {
+          name: "Warehouse H",
+          size: "Medium",
+          location: "South Chennai",
+          price: 2600 * conversionRate,
+          sqft: 3100,
+          image: "./src/images/istockphoto-1405246054-612x612.jpg",
+          href: "/page1.html",
+        },
+        {
+          name: "Warehouse I",
+          size: "Large",
+          location: "North Chennai",
+          price: 3000 * conversionRate,
+          sqft: 4000,
+          image: "./src/images/istockphoto-1405246054-612x612.jpg",
+          href: "/page1.html",
+        },
+      ];
+
+      function displayWarehouses(filteredWarehouses) {
+        const container = document.getElementById("warehouse-cards");
+        container.innerHTML = "";
+        filteredWarehouses.forEach((wh) => {
+          const card = `
+            <a href="${wh.href}" class="card-link">
+                <div class="card">
+                    <img src="${wh.image}" alt="Warehouse Image">
+                    <div class="card-content">
+                        <h2>${wh.name}</h2>
+                        <p>Size: ${wh.size}</p>
+                        <p>Location: ${wh.location}</p>
+                        <p>Square Footage: ${wh.sqft.toLocaleString()} sqft</p>
+                        <p class="price">₹${wh.price.toLocaleString()}/month</p>
+                    </div>
+                </div>
+            </a>
+        `;
+          container.innerHTML += card;
+        });
+      }
+
+      function searchWarehouses() {
+        const query = document
+          .getElementById("search-input")
+          .value.toLowerCase();
+        const sizeFilters = Array.from(
+          document.querySelectorAll('input[name="size"]:checked')
+        ).map((el) => el.value.toLowerCase());
+        const locationFilters = Array.from(
+          document.querySelectorAll('input[name="location"]:checked')
+        ).map((el) => el.value);
+        const priceFilters = Array.from(
+          document.querySelectorAll('input[name="price"]:checked')
+        ).map((el) => el.value);
+        const sqftFilters = Array.from(
+          document.querySelectorAll('input[name="sqft"]:checked')
+        ).map((el) => el.value);
+
+        const filteredWarehouses = warehouses.filter((wh) => {
+          const queryMatch =
+            wh.name.toLowerCase().includes(query) ||
+            wh.size.toLowerCase().includes(query);
+          const sizeMatch =
+            sizeFilters.length === 0 ||
+            sizeFilters.includes(wh.size.toLowerCase());
+          const locationMatch =
+            locationFilters.length === 0 ||
+            locationFilters.includes(wh.location);
+          const priceMatch =
+            priceFilters.length === 0 ||
+            priceFilters.some((priceRange) => {
+              if (priceRange === "under-100000") return wh.price < 100000;
+              if (priceRange === "100000-500000")
+                return wh.price >= 100000 && wh.price <= 500000;
+              if (priceRange === "over-500000") return wh.price > 500000;
+              return false;
+            });
+          const sqftMatch =
+            sqftFilters.length === 0 ||
+            sqftFilters.some((sizeRange) => {
+              if (sizeRange === "under-2000") return wh.sqft < 2000;
+              if (sizeRange === "2000-4000")
+                return wh.sqft >= 2000 && wh.sqft <= 4000;
+              if (sizeRange === "over-4000") return wh.sqft > 4000;
+              return false;
+            });
+
+          return (
+            queryMatch && sizeMatch && locationMatch && priceMatch && sqftMatch
+          );
+        });
+
+        displayWarehouses(filteredWarehouses);
+      }
+
+      function clearFilters() {
+        document
+          .querySelectorAll('input[name="size"]')
+          .forEach((el) => (el.checked = false));
+        document
+          .querySelectorAll('input[name="location"]')
+          .forEach((el) => (el.checked = false));
+        document
+          .querySelectorAll('input[name="price"]')
+          .forEach((el) => (el.checked = false));
+        document
+          .querySelectorAll('input[name="sqft"]')
+          .forEach((el) => (el.checked = false));
+        document.getElementById("search-input").value = "";
+        searchWarehouses(); // Refresh the cards to show all after clearing filters
+      }
+
+      function applyFilters() {
+        searchWarehouses();
+      }
+
+      // Add event listener for Enter key
+      document
+        .getElementById("search-input")
+        .addEventListener("keydown", function (event) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            searchWarehouses(); // Apply filters when Enter is pressed
+          }
+        });
+
+      // Initialize with all warehouses displayed
+      displayWarehouses(warehouses);
+    </script>
+  </body>
+</html>

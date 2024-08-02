@@ -2,6 +2,18 @@
 
 from django.shortcuts import render, redirect
 from .forms import WarehouseDetailsForm
+from django.shortcuts import render
+from .models import Item  # Import your model here
+
+def search_view(request):
+    query = request.GET.get('q', '')  # Get the search query from the GET parameters
+    results = []
+
+    if query:
+        # Perform a search on your model. Modify as needed.
+        results = Item.objects.filter(name__icontains=query)  # Example search filter
+
+    return render(request, 'warehouse_management/search.html', {'query': query, 'results': results})
 
 def create_warehouse(request):
     if request.method == 'POST':

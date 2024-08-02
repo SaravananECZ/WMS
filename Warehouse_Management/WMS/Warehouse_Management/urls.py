@@ -6,5 +6,6 @@ from . import views
 
 urlpatterns = [
     path('create/', views.create_warehouse, name='create_warehouse'),
+     path('search/', views.search_view, name='search'),
     # Add more URLs for other views as needed
 ]
